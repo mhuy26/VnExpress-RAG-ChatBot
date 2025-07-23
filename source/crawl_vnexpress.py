@@ -1,4 +1,3 @@
-
 """
 VNExpress News Crawler and Qdrant Uploader
 ------------------------------------------
@@ -10,7 +9,6 @@ Features:
 - Extensible for other sources or embedding models
 - Designed for production and research workflows
 """
-
 
 # --- Standard Library Imports ---
 import os
@@ -27,30 +25,17 @@ from qdrant_client.models import Distance, VectorParams
 from langchain_qdrant import Qdrant
 from langchain_google_genai import GoogleGenerativeAIEmbeddings  # Gemini embeddings
 
-
 # --- Load environment variables ---
 load_dotenv()
 
 
 def extract_article_content(html: str) -> str:
-    """
-    Extracts the main content from a VNExpress article HTML.
-    Args:
-        html (str): Raw HTML of the article page.
-    Returns:
-        str: Cleaned article text, or empty string if not found.
-    """
     soup = BeautifulSoup(html, "html.parser")
     article = soup.select_one("article.fck_detail")
     return article.get_text(separator="\n").strip() if article else ""
 
 
 def get_article_links() -> list:
-    """
-    Fetches article links from the VNExpress homepage.
-    Returns:
-        list: List of unique article URLs.
-    """
     url = "https://vnexpress.net/"
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url, headers=headers)
@@ -64,13 +49,6 @@ def get_article_links() -> list:
 
 
 def crawl_articles(url_list: list) -> list:
-    """
-    Crawls a list of article URLs and extracts their content and metadata.
-    Args:
-        url_list (list): List of article URLs to crawl.
-    Returns:
-        list: List of Document objects with content and metadata.
-    """
     documents = []
     headers = {"User-Agent": "Mozilla/5.0"}
     for url in url_list:
@@ -95,29 +73,19 @@ def crawl_articles(url_list: list) -> list:
     return documents
 
 
-def store_documents_to_qdrant(documents: list):
-    """
-    Stores a list of Document objects into a Qdrant vector database.
-    Handles collection creation, embedding, and chunk upload.
-    Args:
-        documents (list): List of Document objects to store.
-    """
+def store_documents_to_qdrant(documents: list, google_api_key: str):
     print("🔧 Starting Qdrant upload process...")
 
     # --- Load configuration ---
     qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
     qdrant_api_key = os.getenv("QDRANT_API_KEY")
     collection_name = os.getenv("QDRANT_COLLECTION", "vnexpress_articles")
-    vector_size = int(os.getenv("QDRANT_VECTOR_SIZE", 768))
     distance = os.getenv("QDRANT_DISTANCE", "cosine").upper()
-    # embedding_model = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     distance_enum = getattr(Distance, distance, Distance.COSINE)
 
     print(f"🌐 Qdrant URL: {qdrant_url}")
     print(f"🔑 Using API Key: {'Yes' if qdrant_api_key else 'No'}")
     print(f"📦 Collection: {collection_name}")
-    print(f"📏 Vector Size: {vector_size}")
     print(f"📐 Distance: {distance}")
 
     # --- Connect to Qdrant ---
@@ -128,18 +96,21 @@ def store_documents_to_qdrant(documents: list):
         print(f"❌ Failed to connect to Qdrant: {e}")
         return
 
-    # --- Initialize Embeddings ---
+    # --- Initialize Embeddings and infer vector size ---
     try:
         embedding = GoogleGenerativeAIEmbeddings(
             model="models/embedding-001",
-            google_api_key=GOOGLE_API_KEY
+            google_api_key=google_api_key
         )
+        test_vector = embedding.embed_query("test")
+        vector_size = len(test_vector)
         print("✅ Initialized Gemini embeddings.")
+        print(f"📏 Inferred Vector Size: {vector_size}")
     except Exception as e:
         print(f"❌ Failed to initialize embeddings: {e}")
         return
 
-    # --- Create or check Qdrant collection ---
+    # --- Create collection if needed ---
     try:
         if not client.collection_exists(collection_name):
             print("📁 Collection does not exist. Creating...")
@@ -154,13 +125,13 @@ def store_documents_to_qdrant(documents: list):
         print(f"❌ Failed to create/check collection: {e}")
         return
 
-    # --- Split documents into chunks ---
+    # --- Split documents ---
     print("📄 Splitting documents...")
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = splitter.split_documents(documents)
     print(f"✂️ Total chunks: {len(splits)}")
 
-    # --- Upload chunks to Qdrant ---
+    # --- Upload to Qdrant ---
     ids = [str(uuid4()) for _ in splits]
     vectorstore = Qdrant(client=client, collection_name=collection_name, embeddings=embedding)
 
@@ -172,12 +143,15 @@ def store_documents_to_qdrant(documents: list):
         print(f"❌ Failed to upload documents to Qdrant: {e}")
 
 
-# --- Main script entry point ---
+# --- Main script ---
 if __name__ == "__main__":
-    # Crawl and store top 5 articles for demo
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+    if not google_api_key:
+        raise ValueError("Missing GOOGLE_API_KEY in .env")
+
     article_links = get_article_links()
     print(f"🔗 Found {len(article_links)} article links.")
     documents = crawl_articles(article_links[:5])
     print(f"📰 Retrieved {len(documents)} articles.")
-    store_documents_to_qdrant(documents)
+    store_documents_to_qdrant(documents, google_api_key)
     print("✅ Crawling and storing process completed.")
