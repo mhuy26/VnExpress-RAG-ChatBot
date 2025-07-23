@@ -18,7 +18,8 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings  # CLOUD: Gemini
 # --- Configuration ---
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "vnexpress_articles")
-EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
+# EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
+EMBEDDING_MODEL = os.getenv("GOOGLE_EMBEDDING_MODEL_NAME", "models/embedding-001")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise EnvironmentError("Missing GOOGLE_API_KEY in .env")
@@ -30,7 +31,7 @@ os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
 # CLOUD: Gemini LLM + Google embeddings for Streamlit Cloud
 llm = init_chat_model("gemini-2.0-flash", model_provider="google_genai")
 embedding = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001",
+    model=EMBEDDING_MODEL,
     google_api_key=GOOGLE_API_KEY
 )
 
