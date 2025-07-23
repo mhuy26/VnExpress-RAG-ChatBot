@@ -67,7 +67,9 @@ def get_dynamic_k(user_query):
 
 def retrieve_documents(query: str, k=None) -> str:
     """
-    Retrieve relevant documents from Qdrant using Max Marginal Relevance (MMR).
+    Retrieve relevant documents from Qdrant.
+    Uses similarity search instead of MMR for better reliability with small datasets.
+
     Args:
         query (str): The user's search query.
         k (int, optional): Number of documents to retrieve. If None, uses get_dynamic_k().
@@ -75,11 +77,17 @@ def retrieve_documents(query: str, k=None) -> str:
         str: Concatenated string of retrieved document titles and content.
     """
     k = k or get_dynamic_k(query)
-    docs = vectorstore.max_marginal_relevance_search(
-        query,
-        k=k,
-        fetch_k=min(5 * k, 200)
-    )
+
+    # simplified retrieval for small collections
+    docs = vectorstore.similarity_search(query, k=k)
+
+    # use MMR retrieval when you have many docs (100+)
+    # docs = vectorstore.max_marginal_relevance_search(
+    #     query,
+    #     k=k,
+    #     fetch_k=min(5 * k, 200)
+    # )
+
     return "\n\n".join(f"📌 {doc.metadata.get('title', '')}\n{doc.page_content}" for doc in docs)
 
 
