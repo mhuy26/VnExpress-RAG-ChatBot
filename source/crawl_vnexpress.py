@@ -18,66 +18,8 @@ from langchain_qdrant import Qdrant
 # Load environment variables from .env file
 load_dotenv()
 
-def extract_article_content(html: str) -> str:
-    """
-    Extract the main article content from the provided HTML string.
-    Args:
-        html (str): HTML content of the page.
-    Returns:
-        str: Extracted article text, or empty string if not found.
-    """
-    soup = BeautifulSoup(html, "html.parser")
-    article = soup.select_one("article.fck_detail")
-    return article.get_text(separator="\n").strip() if article else ""
 
-def get_article_links() -> list:
-    """
-    Fetch article links from the VnExpress homepage.
-    Returns:
-        list: List of unique article URLs.
-    """
-    url = "https://vnexpress.net/"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "lxml")
-    links = []
-    for a_tag in soup.select("h3.title-news a"):
-        href = a_tag.get("href")
-        if href and href.startswith("https://vnexpress.net"):
-            links.append(href)
-    return list(set(links))
-
-def crawl_articles(url_list: list) -> list:
-    """
-    Crawl a list of article URLs and extract their content and metadata.
-    Args:
-        url_list (list): List of article URLs to crawl.
-    Returns:
-        list: List of Document objects with content and metadata.
-    """
-    documents = []
-    headers = {"User-Agent": "Mozilla/5.0"}
-    for url in url_list:
-        try:
-            html = requests.get(url, headers=headers).text
-            soup = BeautifulSoup(html, "html.parser")
-            content = extract_article_content(html)
-            title = soup.title.string.strip() if soup.title else ""
-            # Extract meta description if available
-            desc_tag = soup.find("meta", attrs={"name": "description"})
-            description = desc_tag["content"].strip() if desc_tag and "content" in desc_tag.attrs else ""
-            documents.append(Document(
-                page_content=content,
-                metadata={
-                    "source": url,
-                    "language": "vi",
-                    "title": title,
-                    "description": description
-                }
-            ))
-        except Exception as e:
-            print(f"[Error] {url} - {e}")
-    return documents
+from langchain_google_genai import GoogleGenerativeAIEmbeddings  # CLOUD: use Gemini for embedding
 
 def store_documents_to_qdrant(documents: list):
     """
@@ -91,40 +33,58 @@ def store_documents_to_qdrant(documents: list):
     vector_size = int(os.getenv("QDRANT_VECTOR_SIZE", 768))
     distance = os.getenv("QDRANT_DISTANCE", "cosine").upper()
     embedding_model = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
-    
+
+    # CLOUD: Use Qdrant Cloud API key if provided
+    qdrant_api_key = os.getenv("QDRANT_API_KEY")
+
     distance_enum = getattr(Distance, distance, Distance.COSINE)
-    client = QdrantClient(url=qdrant_url)
-    embedding = OllamaEmbeddings(model=embedding_model)
-    # Recreate collection (deletes if exists)
-    client.recreate_collection(
-        collection_name=collection_name,
-        vectors_config=VectorParams(size=vector_size, distance=distance_enum)
+
+    # LOCAL: use Qdrant running on localhost
+    # client = QdrantClient(url=qdrant_url)
+
+    # CLOUD: use Qdrant Cloud with optional API key
+    client = QdrantClient(
+        url=qdrant_url,
+        api_key=qdrant_api_key  # Leave None for localhost
     )
+
+    # LOCAL: use Ollama for local embedding (not supported on Streamlit Cloud)
+    # from langchain_community.embeddings import OllamaEmbeddings
+    # embedding = OllamaEmbeddings(model=embedding_model)
+
+    # CLOUD: use Google embeddings for compatibility with Streamlit Cloud
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    embedding = GoogleGenerativeAIEmbeddings(
+        model="models/embedding-001",
+        google_api_key=GOOGLE_API_KEY
+    )
+
+    # LOCAL: always recreate collection (dangerous in production)
+    # client.recreate_collection(
+    #     collection_name=collection_name,
+    #     vectors_config=VectorParams(size=vector_size, distance=distance_enum)
+    # )
+
+    # CLOUD: only create collection if it doesn't exist
+    if not client.collection_exists(collection_name):
+        client.recreate_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(size=vector_size, distance=distance_enum)
+        )
+
     # Split text and generate embeddings
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = splitter.split_documents(documents)
     ids = [str(uuid4()) for _ in splits]
+
     vectorstore = Qdrant(
-    client=client,
-    collection_name=collection_name,
-    embeddings=embedding
-)
+        client=client,
+        collection_name=collection_name,
+        embeddings=embedding
+    )
 
     vectorstore.add_documents(
         documents=splits,
         ids=ids
     )
     print(f"[Success] Stored {len(splits)} chunks to Qdrant collection: {collection_name}")
-
-def main():
-    """
-    Main function to crawl articles and store them in Qdrant.
-    """
-    article_links = get_article_links()
-    print(f"[Info] Found {len(article_links)} links")
-    documents = crawl_articles(article_links[:5])  # Limit to top 5 for demo
-    print(f"[Info] Crawled {len(documents)} articles")
-    store_documents_to_qdrant(documents)
-
-if __name__ == "__main__":
-    main()

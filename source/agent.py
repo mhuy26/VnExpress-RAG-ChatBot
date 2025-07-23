@@ -1,30 +1,24 @@
+"""
+A script to retrieve relevant news articles from Qdrant and generate concise answers using Gemini.
+Designed for clarity, extensibility, and reproducibility.
+"""
 
-# agent.py
-# Retrieval-Augmented Generation (RAG) pipeline for VnExpress news using Gemini LLM and Qdrant vector search.
-#
-# This module provides a manual RAG pipeline: retrieves relevant news articles from Qdrant,
-# then generates a concise answer using a Gemini LLM. Designed for clarity, extensibility, and reproducibility.
-
-import getpass
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
-
 # LangChain and Qdrant imports
 from langchain.chat_models import init_chat_model
-from langchain_ollama import OllamaEmbeddings
 from langchain_core.messages import SystemMessage, HumanMessage
 from qdrant_client import QdrantClient
 from langchain_qdrant import Qdrant
-
+from langchain_google_genai import GoogleGenerativeAIEmbeddings  # CLOUD: Gemini embedding
+# from langchain_ollama import OllamaEmbeddings  # LOCAL: Ollama embedding (commented below)
 
 # --- Configuration ---
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")  # Qdrant server URL
-QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "vnexpress_articles")  # Qdrant collection name
-EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")  # Embedding model for text
-
-# Ensure Google API key is set for Gemini LLM
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "vnexpress_articles")
+EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise EnvironmentError("Missing GOOGLE_API_KEY in .env")
@@ -32,24 +26,31 @@ os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
 
 
 # --- Model and Vector Store Initialization ---
-# Initialize Gemini LLM and embedding model
+
+# CLOUD: Gemini LLM + Google embeddings for Streamlit Cloud
 llm = init_chat_model("gemini-2.0-flash", model_provider="google_genai")
-# embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 embedding = GoogleGenerativeAIEmbeddings(
     model="models/embedding-001",
-    google_api_key=os.getenv("GOOGLE_API_KEY")
+    google_api_key=GOOGLE_API_KEY
 )
 
-# Initialize Qdrant vector store for document retrieval
+# LOCAL: Ollama LLM + Ollama embeddings (uncomment to use locally)
+# llm = init_chat_model("llama3", model_provider="ollama")
+# embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
+
+# CLOUD: Qdrant Cloud or public Qdrant
 client = QdrantClient(url=QDRANT_URL)
+
+# LOCAL: if using local Qdrant, same URL but without auth
+# client = QdrantClient(url="http://localhost:6333")
+
 vectorstore = Qdrant(
     collection_name=QDRANT_COLLECTION,
-    embeddings=embedding,  # Note: For langchain_qdrant, use 'embeddings' for backward compatibility
+    embeddings=embedding,
     client=client
 )
 
-# --- Dynamic K Retrieval ---
+
 def get_dynamic_k(user_query):
     """
     Dynamically determine the number of documents to retrieve based on the user query.
@@ -64,7 +65,6 @@ def get_dynamic_k(user_query):
         return 5
 
 
-# --- Step 1: Manual document retrieval ---
 def retrieve_documents(query: str, k=None) -> str:
     """
     Retrieve relevant documents from Qdrant using Max Marginal Relevance (MMR).
@@ -76,15 +76,13 @@ def retrieve_documents(query: str, k=None) -> str:
     """
     k = k or get_dynamic_k(query)
     docs = vectorstore.max_marginal_relevance_search(
-    query,
-    k=k,
-    fetch_k=min(5 * k, 200)
-)
-
+        query,
+        k=k,
+        fetch_k=min(5 * k, 200)
+    )
     return "\n\n".join(f"📌 {doc.metadata.get('title', '')}\n{doc.page_content}" for doc in docs)
 
 
-# --- Step 2: Compose prompt and generate response ---
 def generate_response(user_question: str, retrieved_content: str) -> str:
     """
     Generate a concise answer using the Gemini LLM, given the user question and retrieved content.
@@ -125,4 +123,3 @@ def run_pipeline():
 
 if __name__ == "__main__":
     run_pipeline()
-
