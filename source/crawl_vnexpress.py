@@ -110,7 +110,7 @@ def store_documents_to_qdrant(documents: list):
     collection_name = os.getenv("QDRANT_COLLECTION", "vnexpress_articles")
     vector_size = int(os.getenv("QDRANT_VECTOR_SIZE", 768))
     distance = os.getenv("QDRANT_DISTANCE", "cosine").upper()
-    embedding_model = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
+    # embedding_model = os.getenv("OLLAMA_EMBEDDING", "nomic-embed-text")
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     distance_enum = getattr(Distance, distance, Distance.COSINE)
 
