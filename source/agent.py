@@ -34,7 +34,12 @@ os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
 # --- Model and Vector Store Initialization ---
 # Initialize Gemini LLM and embedding model
 llm = init_chat_model("gemini-2.0-flash", model_provider="google_genai")
-embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
+# embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+embedding = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001",
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
 
 # Initialize Qdrant vector store for document retrieval
 client = QdrantClient(url=QDRANT_URL)
@@ -44,7 +49,7 @@ vectorstore = Qdrant(
     client=client
 )
 
-
+# --- Dynamic K Retrieval ---
 def get_dynamic_k(user_query):
     """
     Dynamically determine the number of documents to retrieve based on the user query.
@@ -71,12 +76,12 @@ def retrieve_documents(query: str, k=None) -> str:
     """
     k = k or get_dynamic_k(query)
     docs = vectorstore.max_marginal_relevance_search(
-        query,
-        k=k,
-        fetch_k=min(5 * k, 200)
-    )
-    return "\n\n".join(f"📌 {doc.metadata.get('title', '')}\n{doc.page_content}" for doc in docs)
+    query,
+    k=k,
+    fetch_k=min(5 * k, 200)
+)
 
+    return "\n\n".join(f"📌 {doc.metadata.get('title', '')}\n{doc.page_content}" for doc in docs)
 
 
 # --- Step 2: Compose prompt and generate response ---
