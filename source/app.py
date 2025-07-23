@@ -1,13 +1,8 @@
-
 # app.py
 # Streamlit web app for VNExpress Retrieval-Augmented Generation (RAG) chatbot.
-#
-# This app allows users to ask questions about embedded VNExpress news articles.
-# It retrieves relevant articles and generates concise answers using a Gemini LLM.
 
 import streamlit as st
-from agent import retrieve_documents, generate_response
-
+from agent import retrieve_documents, generate_response_stream  # use stream version!
 
 # --- Streamlit Page Config ---
 st.set_page_config(page_title="VNExpress RAG QA", layout="wide")
@@ -24,15 +19,17 @@ query = st.text_input(
 
 # --- Main QA Logic ---
 if query:
-    # Retrieve relevant articles and generate answer
     with st.spinner("🔎 Searching..."):
         retrieved = retrieve_documents(query)
-        answer = generate_response(query, retrieved)
 
-    # Display retrieved context
-    st.markdown("### 📑 Retrieved Context")
-    st.code(retrieved, language="markdown")
-
-    # Display generated answer
     st.markdown("### 🤖 Answer")
-    st.success(answer)
+    response_placeholder = st.empty()
+    full_response = ""
+
+    # --- Stream the response from Gemini ---
+    for chunk in generate_response_stream(query, retrieved):
+        full_response += chunk
+        response_placeholder.markdown(full_response + "▌")  # Blinking cursor effect
+
+    # Final output without cursor
+    response_placeholder.markdown(full_response)

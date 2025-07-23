@@ -15,6 +15,7 @@ Features:
 import os
 import requests
 import time
+from datetime import datetime
 from uuid import uuid4
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
@@ -151,7 +152,24 @@ def crawl_single_article(url: str, headers: dict) -> Document:
         publish_date = ""
         date_tag = soup.find("span", class_="date")
         if date_tag:
-            publish_date = date_tag.get_text().strip()
+            #publish_date = date_tag.get_text().strip()
+            raw_date = date_tag.get_text().strip()  # e.g., "Thứ tư, 23/7/2025, 07:41 (GMT+7)"
+        try:
+            # Parse components
+            date_part = raw_date.split(",")[1].strip()       # '23/7/2025'
+            time_part = raw_date.split(",")[2].strip().split(" ")[0]  # '07:41'
+            tz_raw = raw_date.split("(")[-1].replace("GMT", "").replace(")", "")  # '+7'
+
+            # Convert to datetime object
+            dt = datetime.strptime(f"{date_part} {time_part}", "%d/%m/%Y %H:%M")
+
+            # Format final datetime string with timezone
+            publish_date = f"{dt.strftime('%Y-%m-%d %H:%M')} +0{tz_raw}:00"
+
+        except Exception as e:
+            print(f"❌ Failed to format publish_date: {e}")
+            publish_date = ""
+
         
         # Extract category if available
         category = ""
@@ -168,7 +186,7 @@ def crawl_single_article(url: str, headers: dict) -> Document:
                 "language": "vi",
                 "title": title,
                 "description": description,
-                "publish_date": publish_date,
+                "publish_date": dt.timestamp(),
                 "category": category,
                 "content_length": len(content)
             }
@@ -417,7 +435,7 @@ def store_documents_to_qdrant(documents: list, google_api_key: str):
         print(f"❌ Failed to upload to Qdrant: {e}")
         return []
 
-if __name__ == "__main__":
+def main():    
     try:
         # Step 1: Validate environment
         google_api_key, qdrant_url = validate_environment()
@@ -439,3 +457,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"❌ Pipeline failed with error: {e}")
+
+if __name__ == "__main__":
+    main()
