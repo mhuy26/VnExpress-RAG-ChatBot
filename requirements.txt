@@ -1,0 +1,12 @@
+langchain
+langgraph
+langchain-community
+langchain-ollama
+langchain-qdrant
+langchain-google-genai
+qdrant-client
+protobuf>=3.20.3,<4
+python-dotenv
+beautifulsoup4
+lxml
+requests
