@@ -1,3 +1,5 @@
+# source/model.py
+
 from config import GOOGLE_API_KEY, EMBEDDING_MODEL
 from langchain.chat_models import init_chat_model
 from langchain_google_genai import GoogleGenerativeAIEmbeddings

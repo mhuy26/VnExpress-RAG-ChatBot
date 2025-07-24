@@ -1,3 +1,5 @@
+# source/main.py
+
 import time
 from functools import wraps
 from typing import Optional, Generator
@@ -5,7 +7,8 @@ from typing import Optional, Generator
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import validate_environment
 from model import load_llm
-from vector_store import initialize_vectorstore, RetrievalResult
+from storage.qdrant_store import initialize_vectorstore  # ✅ use this to get vectorstore + client
+from langchain_qdrant import QdrantVectorStore
 
 llm = load_llm()
 
@@ -32,21 +35,40 @@ def get_dynamic_k(user_query: str) -> int:
     return 5
 
 @retry_on_failure()
-def retrieve_documents(query: str, vectorstore, client, k: Optional[int] = None) -> RetrievalResult:
+def retrieve_documents(query: str, vectorstore, client, k: Optional[int] = None):
     if not vectorstore:
-        return {"success": False, "content": "Vectorstore unavailable", "error_type": "VectorstoreUnavailable"}
+        return {
+            "success": False,
+            "content": "Vectorstore unavailable",
+            "error_type": "VectorstoreUnavailable"
+        }
+
     k = k or get_dynamic_k(query)
     try:
         docs = vectorstore.similarity_search(query, k=k)
         if not docs:
-            return {"success": False, "content": "No relevant documents found", "error_type": "NoResults"}
+            return {
+                "success": False,
+                "content": "No relevant documents found",
+                "error_type": "NoResults"
+            }
+
         formatted = [
             f"📌 {doc.metadata.get('title', 'Untitled')}\n{doc.page_content.strip()}"
             for doc in docs if doc.page_content.strip()
         ]
-        return {"success": True, "content": "\n\n".join(formatted), "error_type": None}
+        return {
+            "success": True,
+            "content": "\n\n".join(formatted),
+            "error_type": None
+        }
+
     except Exception as e:
-        return {"success": False, "content": str(e), "error_type": type(e).__name__}
+        return {
+            "success": False,
+            "content": str(e),
+            "error_type": type(e).__name__
+        }
 
 # --- Streamed Response Generator ---
 def generate_response_stream(user_question: str, retrieved_content: str) -> Generator[str, None, None]:
