@@ -22,9 +22,9 @@
 This chatbot dynamically pulls **fresh news** from VNExpress and answers your questions on the fly using powerful LLMs.
 
 🔍 **Perfect for**:
-- 📈 **Finance & Securities** teams
-- 📰 **Media Monitoring**
-- 🤖 **Chatbot Integration**
+- 📈 **Finance & Securities** teams: Track real-time news that impacts markets, regulations, and stocks.
+- 📰 **Media Monitoring**: Monitor trends, summarize updates, and streamline content curation.
+- 🤖 **Chatbot Integration**: Plug into intelligent RAG pipelines for answering news-related queries.
 
 ---
 
@@ -56,11 +56,21 @@ This chatbot dynamically pulls **fresh news** from VNExpress and answers your qu
 ## Project Structure
 ```bash
 source/
-├── app.py                # Streamlit app + pipeline logic
-├── config.py             # Env vars + validation
-├── model.py              # Gemini LLM + Embedding setup
-├── vectorstore.py        # Qdrant setup and health check
-├── crawl_vnexpress.py    # (optional) VNExpress news crawler
+├── app.py               # Streamlit app: UI + RAG response logic
+├── config.py            # Load & validate environment variables
+├── model.py             # Initialize Gemini LLM and embedding model
+├── main.py              # Entry point for running full pipeline or app
+├── crawl.py             # Main crawler orchestration entry point
+│
+├── crawler/             # VNExpress crawler module
+│   ├── links.py         # Generate/capture article URLs
+│   ├── content.py       # Parse & extract article content + metadata
+│   └── utils.py         # Retry + helpers (e.g., `retry_on_failure`, validation)
+│
+├── storage/             # Vector DB storage and upload logic
+│   ├── embed.py         # Embedding + chunking logic for documents
+│   └── qdrant_store.py  # Qdrant connector + uploader
+
 ```
 
 ## ⚡ Quick Start
@@ -82,16 +92,17 @@ pip install -r requirements.txt
 ### 3. Configure .env
 Create a `.env` file in the project root:
 ```env
-QDRANT_URL=your-cloud-qdrant-url
-QDRANT_API_KEY=your-qdrant-api-key
-QDRANT_COLLECTION=vnexpress_articles
-GOOGLE_API_KEY=your-google-api-key
+QDRANT_URL=<your-cloud-qdrant-url>
+QDRANT_API_KEY=<your-qdrant-api-key>
+QDRANT_COLLECTION=<your-collection-name>
+GOOGLE_API_KEY=<your-google-api-key>
 GOOGLE_EMBEDDING_MODEL_NAME=models/embedding-001
+GEMINI_MODEL_NAME=gemini-2.0-flash
 ```
 
 ### 4. Crawl & Embed News Articles
 ```bash
-python source/crawl_vnexpress.py
+python source/crawl.py
 ```
 
 ### 5. Launch Chatbot Web App
@@ -109,6 +120,6 @@ streamlit run source/app.py
 ---
 
 ## 🔆 Coming Soon: 
-- Automatic news crawler run on schedule: delete pass news, update fresh news.
-
+- Scheduled automatic news crawler.
+- Outdated news deletion and continuous updates.
 > Minh Huy 
