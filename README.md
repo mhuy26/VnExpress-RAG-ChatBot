@@ -2,29 +2,29 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Vector DB](https://img.shields.io/badge/VectorDB-Qdrant-purple)](https://qdrant.tech/)
-[![LLMs](https://img.shields.io/badge/LLMs-Gemini%20%2F%20OpenAI%20%2F%20Ollama-lightgrey)](#tech-stack)
+[![LLMs](https://img.shields.io/badge/LLMs-Gemini-yellow)](#tech-stack)
 [![Frontend](https://img.shields.io/badge/Frontend-Streamlit-orange)](https://streamlit.io/)
-[![LangChain](https://img.shields.io/badge/RAG%20Stack-LangChain-green)](https://python.langchain.com/)
+[![LangChain](https://img.shields.io/badge/RAG%20Stack-LangChain-darkgreen)](https://python.langchain.com/)
 
 ---
 
 ## 🧠 What is this?
 
-**VNExpress RAG Chatbot** is an intelligent Q&A system powered by **LangChain**, **Qdrant**, and **Gemini/OpenAI/Ollama**, designed to retrieve and summarize Vietnamese news in real time from [VNExpress](https://vnexpress.net/).
+**VNExpress RAG Chatbot** is an intelligent Q&A system powered by **LangChain**, **Qdrant**, and **Gemini**, designed to retrieve and summarize Vietnamese news in real time from [VNExpress](https://vnexpress.net/).
 
-> 🧩 Retrieval-Augmented Generation (RAG) ensures accurate, up-to-date answers by combining live vector search with LLM generation.
+> 🚻 Retrieval-Augmented Generation (RAG) ensures accurate, up-to-date answers by combining vector search with LLM generation.
 
 ---
 
 ## 🚀 Why This Matters
 
 📌 **News evolves fast. Static LLMs can’t keep up.**  
-This RAG chatbot dynamically pulls **fresh news** from VNExpress and answers your questions on the fly using powerful LLMs.
+This chatbot dynamically pulls **fresh news** from VNExpress and answers your questions on the fly using powerful LLMs.
 
 🔍 **Perfect for**:
-- 📈 **Finance & Securities** firms needing instant summaries of breaking news
-- 📰 **Journalists** monitoring policy or tech updates
-- 🧑‍💻 **Developers** building news intelligence or alert systems
+- 📈 **Finance & Securities** teams
+- 📰 **Media Monitoring**
+- 🤖 **Chatbot Integration**
 
 ---
 
@@ -34,44 +34,34 @@ This RAG chatbot dynamically pulls **fresh news** from VNExpress and answers you
 |----------------------------------|--------------------------------------------------------------|
 | 📰 **VNExpress Crawler**         | Scrapes and extracts latest news from [vnexpress.net](https://vnexpress.net) |
 | 🔎 **Qdrant Vector Search**      | Embeds articles and enables fast semantic search             |
-| 🧠 **Gemini / OpenAI Summarizer**| Generates concise answers from retrieved documents           |
+| 🧠 **Gemini Summarizer**         | Generates concise answers from retrieved documents           |
 | 🖥️ **Streamlit UI**             | Friendly web interface for exploration and Q&A               |
-| ⚙️ **.env Config + Logs**       | Simple setup, secure API usage, and detailed logging         |
+| ⚙️ **.env Config + Logging**     | Easy setup, safe API handling, and error visibility          |
 
 ---
 
-## 🎯 Use Cases
-
-- 💹 **Securities Firms** – Instant updates on market regulations or government policy
-- 🧾 **Research Teams** – Auto-summary of political or business articles
-- 🤖 **Chatbots** – Embed into client-facing news or alert platforms
-
----
-
-## 🧬 Tech Stack
+## 📱 Tech Stack
 
 | Layer            | Tool/Library                     |
 |------------------|----------------------------------|
-| Language Model   | `Gemini`, `OpenAI`, `Ollama`     |
+| Language Model   | `Gemini`                         |
 | RAG Framework    | `LangChain`                      |
 | Vector DB        | `Qdrant`                         |
-| Crawler          | `BeautifulSoup`, `Requests`      |
 | Web Interface    | `Streamlit`                      |
+| Crawler          | `BeautifulSoup`, `Requests`      |
 | Embedding        | `GoogleGenerativeAIEmbeddings`   |
 
 ---
 
-## 🏢 Why RAG for News? (Enterprise Perspective)
-
-VNExpress is Vietnam’s leading online news portal, trusted by millions for timely, accurate updates on politics, finance, technology, and more.
-
-**Why build a RAG chatbot for news?**
-- **Real-Time Intelligence:** Companies (e.g., securities firms, banks, research teams) need instant, reliable news summaries to make fast decisions and keep clients informed.
-- **Automated Summarization:** RAG chatbots can distill complex news into actionable insights, saving analysts and customers hours of manual reading.
-- **Scalable Service:** Integrate into client portals, dashboards, or alert systems to deliver personalized news Q&A and summaries at scale.
-- **Competitive Edge:** Stay ahead of market moves, regulatory changes, and breaking events with AI-powered news intelligence.
-
----
+## Project Structure
+```bash
+source/
+├── app.py                # Streamlit app + pipeline logic
+├── config.py             # Env vars + validation
+├── model.py              # Gemini LLM + Embedding setup
+├── vectorstore.py        # Qdrant setup and health check
+├── crawl_vnexpress.py    # (optional) VNExpress news crawler
+```
 
 ## ⚡ Quick Start
 
@@ -111,16 +101,6 @@ streamlit run source/app.py
 
 ---
 
-## 🧩 Advanced Usage
-- **Run manual RAG pipeline for debugging:**
-  ```bash
-  python source/agent.py
-  ```
-- **Customize LLM or embeddings:** Edit `.env` and source files to switch between Gemini, OpenAI, or Ollama.
-- **Scale to Qdrant Cloud:** Use Qdrant Cloud for production-grade performance and security.
-
----
-
 ## 🏆 Enterprise Benefits
 - **For Securities/Finance:** Get instant summaries of market-moving news, regulatory updates, and economic events.
 - **For Media Monitoring:** Track breaking news and generate concise reports for clients or internal teams.
@@ -128,4 +108,7 @@ streamlit run source/app.py
 
 ---
 
-> Built for scalable, enterprise-grade news intelligence. Inspired by best practices from leading tech companies.
+## 🔆 Coming Soon: 
+- Automatic news crawler run on schedule: delete pass news, update fresh news.
+
+> Minh Huy 
