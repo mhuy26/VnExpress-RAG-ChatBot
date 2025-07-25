@@ -3,11 +3,10 @@
 import time
 from functools import wraps
 from typing import Optional, Generator
-
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import validate_environment
 from model import load_llm
-from storage.qdrant_store import initialize_vectorstore  # ✅ use this to get vectorstore + client
+from storage.qdrant_store import initialize_vectorstore
 from langchain_qdrant import QdrantVectorStore
 
 llm = load_llm()
@@ -30,7 +29,7 @@ def retry_on_failure(max_retries=3, delay=1):
 
 # --- Document Retrieval ---
 def get_dynamic_k(user_query: str) -> int:
-    if any(k in user_query.lower() for k in ["summary", "tổng hợp"]):
+    if any(k in user_query.lower() for k in ["summary", "tổng hợp", "tất cả", "toàn bộ", "tổng quan", "all", "overview"]):
         return 100
     return 5
 
