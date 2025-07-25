@@ -9,14 +9,15 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain_qdrant import QdrantVectorStore
 
-def initialize_vectorstore():
-    """Load embedding model and initialize Qdrant vector store."""
+def initialize_vectorstore(reset=False):
+    """Load embedding model and initialize Qdrant vector store (optionally resetting collection)."""
     embedding_model, vector_size = load_embedding_model()
-    vectorstore = connect_to_qdrant(vector_size, embedding_model)
-    return vectorstore, vectorstore.client  # Use .client instead of ._client
+    vectorstore = connect_to_qdrant(vector_size, embedding_model, reset=reset)
+    return vectorstore, vectorstore.client
 
-def connect_to_qdrant(vector_size, embedding_model):
-    """Connect to Qdrant and ensure the collection exists with correct vector settings."""
+
+def connect_to_qdrant(vector_size, embedding_model, reset=False):
+    """Connect to Qdrant and ensure the collection exists (with optional reset)."""
     validate_env(["QDRANT_URL", "QDRANT_COLLECTION"])
 
     url = os.getenv("QDRANT_URL")
@@ -26,10 +27,14 @@ def connect_to_qdrant(vector_size, embedding_model):
     distance_enum = getattr(Distance, distance, Distance.COSINE)
 
     client = QdrantClient(url=url, api_key=api_key)
-    collections = client.get_collections()
     print(f"🔗 Target Qdrant collection: {collection}")
 
-    # Create or validate collection
+    if reset and client.collection_exists(collection):
+        print(f"🧹 Resetting collection: {collection}")
+        client.delete_collection(collection)
+
+    # Recreate or validate collection
+    collections = client.get_collections()
     if collection not in [c.name for c in collections.collections]:
         print("📁 Creating new Qdrant collection...")
         client.recreate_collection(
@@ -47,8 +52,6 @@ def connect_to_qdrant(vector_size, embedding_model):
             )
 
     print(f"✅ Connected to Qdrant collection: {collection}")
-    
-    # Fix: Use the correct constructor instead of from_client
     return QdrantVectorStore(
         client=client,
         collection_name=collection,
