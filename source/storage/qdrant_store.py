@@ -59,13 +59,11 @@ def connect_to_qdrant(vector_size, embedding_model, reset=False):
     )
 
 
-def upload_to_qdrant(documents, embedding_model, vector_size):
+def upload_to_qdrant(documents, vectorstore):
     """Upload document chunks to Qdrant in batches."""
     if not documents:
         print("❌ No documents to upload")
         return
-
-    vectorstore = connect_to_qdrant(vector_size, embedding_model)
 
     ids = [str(uuid4()) for _ in documents]
     batch_size = 10

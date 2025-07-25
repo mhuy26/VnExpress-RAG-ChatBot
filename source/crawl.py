@@ -62,7 +62,7 @@ def run():
         return
 
     # Step 6: Upload to Qdrant
-    upload_to_qdrant(chunks, embedding_model, vector_size)
+    upload_to_qdrant(chunks, vectorstore)
     print("✅ Pipeline completed successfully.")
 
 

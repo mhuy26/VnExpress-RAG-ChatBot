@@ -10,7 +10,7 @@ def load_embedding_model():
     """Load and validate Gemini embedding model."""
     validate_env(["GOOGLE_API_KEY"])
     model = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model=os.getenv("GOOGLE_EMBEDDING_MODEL_NAME"),
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
     test_vec = model.embed_query("test")

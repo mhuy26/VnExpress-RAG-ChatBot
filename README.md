@@ -7,6 +7,8 @@
 [![LangChain](https://img.shields.io/badge/RAG%20Stack-LangChain-darkgreen)](https://python.langchain.com/)
 
 ---
+# [CLICK FOR DEMO](https://vnexpress-rag-chatbot.streamlit.app/)
+---
 
 ## 🧠 What is this?
 

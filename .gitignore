@@ -68,3 +68,14 @@ htmlcov/
 
 # Ignore SonarQube
 .sonarqube/
+
+# Ignore Python cache and test artifacts
+.pytest_cache/
+.cache/
+
+# Ignore embedded or test data
+*.embeddings
+*.testdata
+
+# Ignore nested git repos
+**/.git

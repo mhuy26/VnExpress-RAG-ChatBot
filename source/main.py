@@ -4,7 +4,6 @@ import time
 from functools import wraps
 from typing import Optional, Generator
 from langchain_core.messages import SystemMessage, HumanMessage
-from config import validate_environment
 from model import load_llm
 from storage.qdrant_store import initialize_vectorstore
 from langchain_qdrant import QdrantVectorStore
@@ -78,6 +77,7 @@ def generate_response_stream(user_question: str, retrieved_content: str) -> Gene
             "If the information is not sufficient to answer the question, say you don't know. "
             "Answer in the same language as the user used."
             "Keep your answer concise but informative. Avoid overly short or overly verbose responses."
+            "If asked to summarize, provide a brief summary, do not respond with a long essay or a single sentence."
             "Do not add information that is not in the retrieved content.\n\n"
             f"Retrieved content:\n{retrieved_content}"
         )
@@ -112,5 +112,4 @@ def run_pipeline_stream(query: str = "Ủy ban Thường vụ Quốc hội đã 
     print(preview[:500] + "..." if len(preview) > 500 else preview)
 
 if __name__ == "__main__":
-    validate_environment()
     run_pipeline_stream()
