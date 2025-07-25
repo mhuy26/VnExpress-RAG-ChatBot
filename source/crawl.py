@@ -3,13 +3,12 @@
 Main pipeline orchestration for VNExpress RAG ingestion.
 """
 
-import os
 from dotenv import load_dotenv
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from crawler.links import get_article_links
 from crawler.content import crawl_single_article
 from storage.embed import load_embedding_model, validate_vector_size
-from storage.qdrant_store import upload_to_qdrant
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from storage.qdrant_store import initialize_vectorstore, upload_to_qdrant
 
 
 def crawl_articles(urls: list) -> list:
@@ -24,9 +23,12 @@ def crawl_articles(urls: list) -> list:
     return documents
 
 
-def main():
+def run():
     load_dotenv()
     print("🔍 Starting VNExpress RAG pipeline...")
+
+    # Step 0: Reset Qdrant collection
+    vectorstore, client = initialize_vectorstore(reset=True)
 
     # Step 1: Load article links
     links = get_article_links(max_links=15)
@@ -65,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run()
