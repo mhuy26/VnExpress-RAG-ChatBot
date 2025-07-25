@@ -77,7 +77,9 @@ def generate_response_stream(user_question: str, retrieved_content: str) -> Gene
             "You are an assistant for question-answering tasks about Vietnamese news. "
             "Use the following retrieved content to answer the user's question concisely and accurately. "
             "If the information is not sufficient to answer the question, say you don't know. "
-            "Use three sentences maximum. Answer in Vietnamese if the question is in Vietnamese.\n\n"
+            "Answer in the same language as the user used."
+            "Keep your answer concise but informative. Avoid overly short or overly verbose responses."
+            "Do not add information that is not in the retrieved content.\n\n"
             f"Retrieved content:\n{retrieved_content}"
         )
         messages = [
