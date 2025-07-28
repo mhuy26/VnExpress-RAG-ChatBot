@@ -58,25 +58,24 @@ This chatbot dynamically pulls **fresh news** from VNExpress and answers your qu
 ## Project Structure
 ```bash
 source/
-├── app.py               # Streamlit app: UI + RAG response logic
-├── config.py            # Load & validate environment variables
-├── model.py             # Initialize Gemini LLM and embedding model
-├── main.py              # Entry point for running full pipeline or app
-├── new_crawl.py         # Main crawler orchestration entry point
+├── app.py               # Streamlit app: UI + handles user input and displays RAG responses
+├── config.py            # Load, validate, and expose environment variables (API keys, DB URLs, etc.)
+├── model.py             # Initialize Gemini LLM and embedding model (e.g., Gemini Pro + embeddings)
+├── main.py              # Entry point for running full ingestion + RAG demo pipeline
+├── new_crawl.py         # Main script to run the VNExpress crawling and vector store upload pipeline
 │
-├── crawler/             # VNExpress crawler module
-│   ├── header.py              #
-│   ├── links.py               #
-│   └── playwright_crawler.py  #         
-│   └── seesion.py             #
-│   └── stealth.py             #
-│   └── vnexpress.py           #
+├── crawler/
+│   ├── header.py              # HTTP headers and user-agent randomization logic
+│   ├── links.py               # Extracts and filters links to VNExpress articles by category/date
+│   ├── playwright_crawler.py  # Uses Playwright to load and extract article content robustly
+│   ├── seesion.py             # Manages Playwright browser sessions with retry logic
+│   ├── stealth.py             # Injects stealth techniques to bypass bot detection (e.g., JS tricks)
+│   └── vnexpress.py           # High-level interface for crawling articles (uses all crawler components)
 │
-├── storage/             # Vector DB storage and upload logic
-│   ├── embed.py         # Embedding + chunking logic for documents
-│   └── qdrant_store.py  # Qdrant connector + uploader
+├── storage/
+│   ├── embed.py         # Document chunking, embedding via Gemini/OpenAI, metadata enrichment
+│   └── qdrant_store.py  # Qdrant client logic: create collections, insert vectors, search
 
-```
 
 ## ⚡ Quick Start
 
@@ -123,25 +122,6 @@ streamlit run source/app.py
 > Minh Huy ments.txt
 ```
 
-### 3. Configure .env
-Create a `.env` file in the project root:
-```env
-QDRANT_URL=your-cloud-qdrant-url
-QDRANT_API_KEY=your-qdrant-api-key
-QDRANT_COLLECTION=vnexpress_articles
-GOOGLE_API_KEY=your-google-api-key
-GOOGLE_EMBEDDING_MODEL_NAME=models/embedding-001
-```
-
-### 4. Crawl & Embed News Articles
-```bash
-python source/crawl_vnexpress.py
-```
-
-### 5. Launch Chatbot Web App
-```bash
-streamlit run source/app.py
-```
 ---
 
 ## 🏆 Enterprise Benefits
