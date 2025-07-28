@@ -4,7 +4,6 @@ User-agent, proxy, and screen-size utilities for request configuration
 """
 import random
 import json
-import os
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
