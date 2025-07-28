@@ -76,11 +76,12 @@ source/
 │   ├── embed.py         # Document chunking, embedding via Gemini/OpenAI, metadata enrichment
 │   └── qdrant_store.py  # Qdrant client logic: create collections, insert vectors, search
 
+```bash
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Clone the Repository
-```bash
+```
 git clone https://github.com/mhuy26/VNExpress-RAG-ChatBot.git
 cd VNExpress-RAG-ChatBot
 ```
