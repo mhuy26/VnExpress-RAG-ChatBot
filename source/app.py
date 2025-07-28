@@ -31,19 +31,13 @@ st.markdown("Ask questions about the current VNExpress articles.")
 # --- News Refresh Section ---
 st.subheader("🕸️ VNExpress Data Update")
 
-# Show last updated timestamp
-last_crawled = get_last_crawled()
-if last_crawled:
-    st.markdown(f"🕒 Last updated: `{last_crawled}`")
-else:
-    st.markdown("🕒 Last updated: *not yet this session*")
 
-# Run crawler on button click
-if st.button("📰 Get News"):
-    from crawl import run as crawl_news
-    with st.spinner("🕷️ Crawling VNExpress and updating vector database..."):
+# Run enhanced Playwright-based crawler on button click
+if st.button("📰 Get News (Playwright)"):
+    from new_crawl import run as enhanced_crawl_news
+    with st.spinner("🕷️ Crawling VNExpress with Playwright and updating vector database..."):
         try:
-            crawl_news()
+            enhanced_crawl_news(use_cache=False, max_links=15, reset_collection=False)
             update_last_crawled.clear()  # Clear cache
             new_time = update_last_crawled()  # Re-cache new time
             st.success(f"✅ News updated at `{new_time}`")
@@ -82,5 +76,5 @@ if query:
 
         response_placeholder.markdown(full_response)
 
-        with st.expander("📚 Retrieved Context"):
-            st.markdown(retrieval["content"][:3000])  # Avoid overwhelming display
+        # with st.expander("📚 Retrieved Context"):
+        #     st.markdown(retrieval["content"][:3000])  # Avoid overwhelming display
