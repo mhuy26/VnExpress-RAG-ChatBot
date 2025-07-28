@@ -1,14 +1,27 @@
 beautifulsoup4
-google-generativeai
+lxml
+requests
+python-dotenv
+streamlit
+protobuf>=3.20.3,<4
+
+# LangChain and vector DB
 langchain
 langchain-community
 langchain-google-genai
 langchain-ollama
 langchain-qdrant
 langgraph
-lxml
-protobuf>=3.20.3,<4
-python-dotenv
 qdrant-client
-requests
-streamlit
+
+# Playwright for advanced crawling
+playwright
+
+# For async and browser automation (optional, but recommended for Playwright)
+httpx
+
+# For logging and debugging
+loguru
+
+# Google Generative AI (for Gemini)
+google-generativeai

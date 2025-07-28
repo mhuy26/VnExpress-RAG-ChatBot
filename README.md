@@ -7,7 +7,7 @@
 [![LangChain](https://img.shields.io/badge/RAG%20Stack-LangChain-darkgreen)](https://python.langchain.com/)
 
 ---
-# [CLICK FOR DEMO](https://vnexpress-rag-chatbot.streamlit.app/)
+# [CLICK FOR DEMO](https://chat-vnexpress.streamlit.app/)
 ---
 
 ## 🧠 What is this?
@@ -62,12 +62,15 @@ source/
 ├── config.py            # Load & validate environment variables
 ├── model.py             # Initialize Gemini LLM and embedding model
 ├── main.py              # Entry point for running full pipeline or app
-├── crawl.py             # Main crawler orchestration entry point
+├── new_crawl.py         # Main crawler orchestration entry point
 │
 ├── crawler/             # VNExpress crawler module
-│   ├── links.py         # Generate/capture article URLs
-│   ├── content.py       # Parse & extract article content + metadata
-│   └── utils.py         # Retry + helpers (e.g., `retry_on_failure`, validation)
+│   ├── header.py              #
+│   ├── links.py               #
+│   └── playwright_crawler.py  #         
+│   └── seesion.py             #
+│   └── stealth.py             #
+│   └── vnexpress.py           #
 │
 ├── storage/             # Vector DB storage and upload logic
 │   ├── embed.py         # Embedding + chunking logic for documents
@@ -104,7 +107,7 @@ GEMINI_MODEL_NAME=gemini-2.0-flash
 
 ### 4. Crawl & Embed News Articles
 ```bash
-python source/crawl.py
+python source/new_crawl.py
 ```
 
 ### 5. Launch Chatbot Web App
@@ -114,6 +117,33 @@ streamlit run source/app.py
 
 ---
 
+## 🔜 Coming Soon: 
+- Scheduled automatic news crawler.
+- Outdated news deletion and continuous updates.
+> Minh Huy ments.txt
+```
+
+### 3. Configure .env
+Create a `.env` file in the project root:
+```env
+QDRANT_URL=your-cloud-qdrant-url
+QDRANT_API_KEY=your-qdrant-api-key
+QDRANT_COLLECTION=vnexpress_articles
+GOOGLE_API_KEY=your-google-api-key
+GOOGLE_EMBEDDING_MODEL_NAME=models/embedding-001
+```
+
+### 4. Crawl & Embed News Articles
+```bash
+python source/crawl_vnexpress.py
+```
+
+### 5. Launch Chatbot Web App
+```bash
+streamlit run source/app.py
+```
+---
+
 ## 🏆 Enterprise Benefits
 - **For Securities/Finance:** Get instant summaries of market-moving news, regulatory updates, and economic events.
 - **For Media Monitoring:** Track breaking news and generate concise reports for clients or internal teams.
@@ -121,7 +151,4 @@ streamlit run source/app.py
 
 ---
 
-## 🔆 Coming Soon: 
-- Scheduled automatic news crawler.
-- Outdated news deletion and continuous updates.
-> Minh Huy 
+> Built for scalable, enterprise-grade news intelligence. Inspired by best practices from leading tech companies.
