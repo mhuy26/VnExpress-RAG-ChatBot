@@ -76,7 +76,7 @@ source/
 │   ├── embed.py         # Document chunking, embedding via Gemini/OpenAI, metadata enrichment
 │   └── qdrant_store.py  # Qdrant client logic: create collections, insert vectors, search
 
-```bash
+```
 
 ## Quick Start
 
@@ -120,16 +120,5 @@ streamlit run source/app.py
 ## 🔜 Coming Soon: 
 - Scheduled automatic news crawler.
 - Outdated news deletion and continuous updates.
-> Minh Huy ments.txt
+> Minh Huy
 ```
-
----
-
-## 🏆 Enterprise Benefits
-- **For Securities/Finance:** Get instant summaries of market-moving news, regulatory updates, and economic events.
-- **For Media Monitoring:** Track breaking news and generate concise reports for clients or internal teams.
-- **For Customer Service:** Provide automated, conversational news updates to users.
-
----
-
-> Built for scalable, enterprise-grade news intelligence. Inspired by best practices from leading tech companies.
