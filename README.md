@@ -121,4 +121,3 @@ streamlit run source/app.py
 - Scheduled automatic news crawler.
 - Outdated news deletion and continuous updates.
 > Minh Huy
-```
